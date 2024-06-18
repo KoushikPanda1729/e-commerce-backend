@@ -38,5 +38,3 @@ To get a local copy up and running, follow these simple steps.
   CLOUDINARY_CLOUD_NAME=yourcloudname
   CLOUDINARY_API_KEY=yourapikey
   CLOUDINARY_API_SECRET=yourapisecret
-  
-git clone https://github.com/yourusername/ecommerce-backend.git
