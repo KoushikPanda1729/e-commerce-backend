@@ -128,4 +128,60 @@ const deleteProduct = asyncHandler(async (req, res) => {
   res.status(200).json(new ApiRespose(200, {}, "Product delete successfully"));
 });
 
-export { createProduct, updateProduct, getAllProduct, deleteProduct };
+const filterProduct = asyncHandler(async (req, res) => {
+  try {
+    let { categoryId, price } = req.body;
+
+    let arg = {};
+    if (categoryId?.length > 0) {
+      arg.category = categoryId;
+    }
+    if (price?.length) {
+      arg.price = { $gte: price[0], $lte: price[1] };
+    }
+
+    const filterProduct = await Product.find(arg);
+
+    return res
+      .status(200)
+      .json(
+        new ApiRespose(200, filterProduct, "Product filtered successfully")
+      );
+  } catch (error) {
+    console.log(error.message);
+    return res.status(400).json(new ApiError(400, "Product not filtered "));
+  }
+});
+
+const countProduct = asyncHandler(async (req, res) => {
+  try {
+    const productCound = await Product.find({}).estimatedDocumentCount();
+    return res
+      .status(200)
+      .json(new ApiRespose(200, productCound, "count successfull"));
+  } catch (error) {
+    console.log(error.message);
+    return res.status(400).json(new ApiError(400, "Product not filtered "));
+  }
+});
+
+const listProduct = asyncHandler(async (req, res) => {
+  const perPage = 2;
+  let page = req.params.page || 1;
+  const product = await Product.find({})
+    .skip((page - 1) * perPage)
+    .limit(perPage)
+    .sort({ createdAt: -1 });
+  return res
+    .status(200)
+    .json(new ApiRespose(200, product, "count successfull"));
+});
+export {
+  createProduct,
+  updateProduct,
+  getAllProduct,
+  deleteProduct,
+  filterProduct,
+  countProduct,
+  listProduct,
+};
