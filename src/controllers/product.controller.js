@@ -167,8 +167,9 @@ const countProduct = asyncHandler(async (req, res) => {
 
 const listProduct = asyncHandler(async (req, res) => {
   const perPage = 2;
-  let page = req.params.page || 1;
+  let page = req?.params?.page || 1;
   const product = await Product.find({})
+    .select("-porductImage")
     .skip((page - 1) * perPage)
     .limit(perPage)
     .sort({ createdAt: -1 });
