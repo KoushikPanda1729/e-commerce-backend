@@ -26,6 +26,7 @@ To get a local copy up and running, follow these simple steps.
 - **MongoDB**: Install MongoDB from [mongodb.com](https://www.mongodb.com/). Ensure MongoDB is running on your local machine or provide a remote MongoDB URI.
 - **Cloudinary Account**: Sign up for a free account at [Cloudinary](https://cloudinary.com/). You will need your Cloud Name, API Key, and API Secret.
 - **Environment Variables**: Set up a `.env` file in the root directory of your project with the following variables:
+
   ```env
   PORT=8000
   MONGODB_URI=your_mongodb_uri
@@ -38,3 +39,8 @@ To get a local copy up and running, follow these simple steps.
   CLOUDINARY_CLOUD_NAME=yourcloudname
   CLOUDINARY_API_KEY=yourapikey
   CLOUDINARY_API_SECRET=yourapisecret
+
+  EMAIL_USER=Use your own email
+  EMAIL_PASSWORD=Use your own password
+
+  ```
