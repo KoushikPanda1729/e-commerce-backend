@@ -5,6 +5,9 @@ import uploadOnCloudinary, {
   deleteOnCloudinary,
 } from "../utils/cloudinary.util.js";
 import ApiRespose from "../utils/apiResponse.util.js";
+import sendMail from "../utils/sendMail.util.js";
+import { generateRandom6DigitNumber } from "../utils/otpGenerate.util.js";
+import { expireTimeFunction } from "../utils/timeExpire.util.js";
 
 const generateAccessTokenAndRefreshToken = async (userId) => {
   try {
@@ -24,10 +27,11 @@ const generateAccessTokenAndRefreshToken = async (userId) => {
 };
 
 const userRegister = asyncHandler(async (req, res, _) => {
-  const { userName, email, password, fullName, role, answer,address } = req.body;
+  const { userName, email, password, fullName, role, answer, address } =
+    req.body;
 
   if (
-    [userName, email, password, fullName, role, answer,address].some(
+    [userName, email, password, fullName, role, answer, address].some(
       (field) => field.trim().length === 0
     )
   ) {
@@ -272,6 +276,62 @@ const forgotPassword = asyncHandler(async (req, res, _) => {
     );
 });
 
+const sendOTP = asyncHandler(async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+    user.otp = generateRandom6DigitNumber();
+    user.expireAt = Date.now() + 3 * 60 * 1000;
+    await user.save({ validateBeforeSave: false });
+
+    const sendingEmail = user?.email;
+    const sendignOTP = user?.otp;
+    await sendMail(sendingEmail, "password-change", sendignOTP);
+
+    return res
+      .status(200)
+      .json(new ApiRespose(200, {}, "Email send successfully"));
+  } catch (error) {
+    console.log("error is >>> ::: ", error.message || error);
+    return res
+      .status(400)
+      .json(new ApiError(400, error.message || "some error occured"));
+  }
+});
+
+const forgotPasswordUsingOTP = asyncHandler(async (req, res) => {
+  const { otp, newPassword } = req.body;
+  if (!otp) {
+    throw new ApiError(400, "OTP is required");
+  }
+
+  const user = await User.findOne({ otp });
+  const isPasswordValid = await user.isPasswordCorrect(newPassword);
+  if (isPasswordValid) {
+    throw new ApiError(400, "new password is never same as old password");
+  }
+  const isOTPNotValid = expireTimeFunction(user.expireAt);
+
+  if (isOTPNotValid) {
+    user.otp = undefined;
+    user.expireAt = undefined;
+    await user.save({ validateBeforeSave: false });
+    throw new ApiError(400, "OTP is not valid");
+  }
+
+  if (!user) {
+    throw new ApiError(400, "OTP not matched");
+  }
+  user.password = newPassword;
+  user.otp = undefined;
+  user.expireAt = undefined;
+  await user.save({ validateBeforeSave: false });
+  console.log(user);
+  return res
+    .status(200)
+    .json(new ApiRespose(200, {}, "Password updated successfully"));
+});
+
 export {
   userRegister,
   userLogin,
@@ -281,4 +341,6 @@ export {
   updateAvatar,
   getUser,
   forgotPassword,
+  sendOTP,
+  forgotPasswordUsingOTP,
 };

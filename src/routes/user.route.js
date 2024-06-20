@@ -1,8 +1,10 @@
 import { Router } from "express";
 import {
   forgotPassword,
+  forgotPasswordUsingOTP,
   getUser,
   refreshAccessToken,
+  sendOTP,
   updateAvatar,
   updateProfile,
   userLoggOut,
@@ -20,6 +22,8 @@ userRoute.route("/logout").post(verifyJWT, userLoggOut);
 userRoute.route("/update-password").post(verifyJWT, updateProfile);
 userRoute.route("/refresh").post(refreshAccessToken);
 userRoute.route("/forgot").post(forgotPassword);
+userRoute.route("/sentOTP").post(sendOTP);
+userRoute.route("/forgotPassword-otp").post(forgotPasswordUsingOTP);
 userRoute
   .route("/update-avatar")
   .post(verifyJWT, upload.single("avatar"), updateAvatar);
