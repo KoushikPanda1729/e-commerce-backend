@@ -1,3 +1,4 @@
+import slugify from "slugify";
 import { Product } from "../models/product.model.js";
 import ApiError from "../utils/apiError.util.js";
 import ApiRespose from "../utils/apiResponse.util.js";
@@ -5,6 +6,7 @@ import asyncHandler from "../utils/asyncHandler.util.js";
 import uploadOnCloudinary, {
   deleteOnCloudinary,
 } from "../utils/cloudinary.util.js";
+import { Category } from "../models/category.model.js";
 
 const createProduct = asyncHandler(async (req, res) => {
   const { productName, title, description, price, stock } = req.body;
@@ -45,6 +47,7 @@ const createProduct = asyncHandler(async (req, res) => {
   const createProduct = await Product.create({
     productName,
     title,
+    slug: slugify(productName),
     description,
     price,
     stock,
@@ -90,6 +93,7 @@ const updateProduct = asyncHandler(async (req, res) => {
       $set: {
         productName,
         title,
+        slug: slugify(productName),
         description,
         price,
         stock,
@@ -131,6 +135,7 @@ const deleteProduct = asyncHandler(async (req, res) => {
 const filterProduct = asyncHandler(async (req, res) => {
   try {
     let { categoryId, price } = req.body;
+    console.log(categoryId);
 
     let arg = {};
     if (categoryId?.length > 0) {
@@ -177,6 +182,63 @@ const listProduct = asyncHandler(async (req, res) => {
     .status(200)
     .json(new ApiRespose(200, product, "count successfull"));
 });
+
+const searchProduct = asyncHandler(async (req, res) => {
+  try {
+    const { searchName } = req.params;
+
+    const searchResult = await Product.find({
+      $or: [
+        { productName: { $regex: searchName, $options: "i" } },
+        { description: { $regex: searchName, $options: "i" } },
+      ],
+    });
+    return res
+      .status(200)
+      .json(new ApiRespose(200, searchResult, "count successfull"));
+  } catch (error) {
+    console.log(error.message);
+    return res.status(400).json(new ApiError(400, "Product not searched "));
+  }
+});
+
+const getSingleProduct = asyncHandler(async (req, res) => {
+  const { slug } = req.params;
+  const singleProduct = await Product.find({ slug });
+
+  return res
+    .status(200)
+    .json(
+      new ApiRespose(200, singleProduct, "single product fetched successfull")
+    );
+});
+
+const getSimilarProduct = asyncHandler(async (req, res) => {
+  const { productId, categoryId } = req.params;
+
+  const similarProduct = await Product.find({
+    category: categoryId,
+    _id: { $ne: productId },
+  })
+    .limit(3)
+    .populate("category");
+
+  return res
+    .status(200)
+    .json(
+      new ApiRespose(200, similarProduct, "similar product fetched successfull")
+    );
+});
+
+const getProductByCategory = asyncHandler(async (req, res) => {
+  const { slug } = req.params;
+  const category = await Category.findOne({ slug });
+  const products = await Product.find({ category }).populate("category");
+  return res
+    .status(200)
+    .json(new ApiRespose(200, products, "Get product by category"));
+});
+
 export {
   createProduct,
   updateProduct,
@@ -185,4 +247,8 @@ export {
   filterProduct,
   countProduct,
   listProduct,
+  searchProduct,
+  getSingleProduct,
+  getSimilarProduct,
+  getProductByCategory,
 };

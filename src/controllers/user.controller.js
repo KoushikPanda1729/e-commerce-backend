@@ -24,10 +24,10 @@ const generateAccessTokenAndRefreshToken = async (userId) => {
 };
 
 const userRegister = asyncHandler(async (req, res, _) => {
-  const { userName, email, password, fullName, role, answer } = req.body;
+  const { userName, email, password, fullName, role, answer,address } = req.body;
 
   if (
-    [userName, email, password, fullName, role, answer].some(
+    [userName, email, password, fullName, role, answer,address].some(
       (field) => field.trim().length === 0
     )
   ) {
@@ -58,6 +58,7 @@ const userRegister = asyncHandler(async (req, res, _) => {
     email,
     password,
     fullName,
+    address,
     role,
     avatar: {
       public_id: avatarCloudinaryURL.public_id,

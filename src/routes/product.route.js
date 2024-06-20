@@ -7,7 +7,11 @@ import {
   deleteProduct,
   filterProduct,
   getAllProduct,
+  getProductByCategory,
+  getSimilarProduct,
+  getSingleProduct,
   listProduct,
+  searchProduct,
   updateProduct,
 } from "../controllers/product.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
@@ -28,4 +32,12 @@ productRoute
 productRoute.route("/filter-product").get(verifyJWT, filterProduct);
 productRoute.route("/count-product").get(verifyJWT, countProduct);
 productRoute.route("/list-product/:page").get(verifyJWT, listProduct);
+productRoute.route("/search-product/:searchName").get(verifyJWT, searchProduct);
+productRoute.route("/single-product/:slug").get(verifyJWT, getSingleProduct);
+productRoute
+  .route("/similar-product/:productId/:categoryId")
+  .get(verifyJWT, getSimilarProduct);
+productRoute
+  .route("/get-product-by-category/:slug")
+  .get(verifyJWT, getProductByCategory);
 export default productRoute;

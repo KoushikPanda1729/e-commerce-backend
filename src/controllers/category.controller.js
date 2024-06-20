@@ -1,3 +1,4 @@
+import slugify from "slugify";
 import { Category } from "../models/category.model.js";
 import ApiError from "../utils/apiError.util.js";
 import ApiRespose from "../utils/apiResponse.util.js";
@@ -20,6 +21,7 @@ const createCategory = asyncHandler(async (req, res) => {
 
   const createCategory = await Category.create({
     name,
+    slug: slugify(name),
   });
   res
     .status(200)
@@ -32,7 +34,7 @@ const updateCategory = asyncHandler(async (req, res) => {
   const findUpdatedCategory = await Category.findByIdAndUpdate(
     id,
     {
-      $set: { name },
+      $set: { name, slug: slugify(name) },
     },
     {
       new: true,
