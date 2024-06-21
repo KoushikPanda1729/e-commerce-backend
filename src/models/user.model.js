@@ -90,6 +90,7 @@ userSchema.methods.isPasswordCorrect = async function (password) {
     return false;
   }
 };
+
 userSchema.methods.isAnswerCorrect = async function (answer) {
   try {
     return await bcrypt.compare(answer, this.answer);

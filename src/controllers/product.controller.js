@@ -117,7 +117,7 @@ const updateProduct = asyncHandler(async (req, res) => {
     .json(new ApiRespose(200, updatedProduct, "User updated successfully"));
 });
 
-const getAllProduct = asyncHandler(async (req, res) => {
+const getAllProduct = asyncHandler(async (_, res) => {
   const allProduct = await Product.find({});
   res
     .status(200)
@@ -158,7 +158,7 @@ const filterProduct = asyncHandler(async (req, res) => {
   }
 });
 
-const countProduct = asyncHandler(async (req, res) => {
+const countProduct = asyncHandler(async (_, res) => {
   try {
     const productCound = await Product.find({}).estimatedDocumentCount();
     return res
