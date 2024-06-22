@@ -43,4 +43,11 @@ To get a local copy up and running, follow these simple steps.
   EMAIL_USER=Use your own email
   EMAIL_PASSWORD=Use your own password
 
+
+  For payments use braintree
+
+  BRAINTREE_MARCHENT_ID=use your id
+  BRAINTREE_PUBLIC_KEY=use your id
+  BRAINTREE_PRIVATE_KEY=use your id
+
   ```
