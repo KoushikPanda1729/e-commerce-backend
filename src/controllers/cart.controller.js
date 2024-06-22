@@ -115,11 +115,9 @@ const decreaseQYT = asyncHandler(async (req, res) => {
 });
 
 const getAllCart = asyncHandler(async (req, res) => {
-  const cart = await Cart.find({});
+  const cart = await Cart.find({ owner: req.user._id });
 
-  return res
-    .status(200)
-    .json(new ApiRespose(200, cart[0].items, "All cart fetched"));
+  return res.status(200).json(new ApiRespose(200, cart[0].items, "All cart fetched"));
 });
 
 export { addToCart, deleteToCart, increaseQYT, decreaseQYT, getAllCart };

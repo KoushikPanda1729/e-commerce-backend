@@ -7,6 +7,18 @@ import uploadOnCloudinary, {
   deleteOnCloudinary,
 } from "../utils/cloudinary.util.js";
 import { Category } from "../models/category.model.js";
+import braintree from "braintree";
+import dotenv from "dotenv";
+import { Cart } from "../models/cart.model.js";
+import { Order } from "../models/order.model.js";
+dotenv.config({ path: "./.env" });
+
+let gateway = new braintree.BraintreeGateway({
+  environment: braintree.Environment.Sandbox,
+  merchantId: process.env.BRAINTREE_MARCHENT_ID,
+  publicKey: process.env.BRAINTREE_PUBLIC_KEY,
+  privateKey: process.env.BRAINTREE_PRIVATE_KEY,
+});
 
 const createProduct = asyncHandler(async (req, res) => {
   const { productName, title, description, price, stock } = req.body;
@@ -239,6 +251,99 @@ const getProductByCategory = asyncHandler(async (req, res) => {
     .json(new ApiRespose(200, products, "Get product by category"));
 });
 
+const getToken = asyncHandler(async (req, res) => {
+  try {
+    gateway.clientToken.generate({}, function (error, response) {
+      if (error) {
+        return res
+          .status(404)
+          .json(
+            new ApiError(404, "Error Occured at braintree token generation")
+          );
+      } else {
+        return res
+          .status(200)
+          .json(new ApiRespose(200, response, "Token generate successfully"));
+      }
+    });
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(404)
+      .json(new ApiError(404, "Error Occured at braintree token generation"));
+  }
+});
+
+const makePayment = asyncHandler(async (req, res) => {
+  const { address } = req.body;
+  try {
+    const cart = await Cart.find({ owner: req.user._id });
+
+    const newTransjection = await gateway.transaction.sale(
+      {
+        amount: cart[0]?.totalPrice,
+        paymentMethodNonce: "nonce-from-the-client",
+        options: {
+          submitForSettlement: true,
+        },
+      },
+      async function (err, result) {
+        if (result) {
+          const order = await Order.create({
+            user: req?.user?._id,
+            items: cart[0].items,
+            totalAmount: cart[0]?.totalPrice,
+            shippingAddress: address,
+          });
+          return res
+            .status(200)
+            .json(new ApiRespose(200, order, "order sent successfully"));
+        } else {
+          console.error(result.message);
+          return res
+            .status(404)
+            .json(new ApiError(404, "Error Occured at payment"));
+        }
+      }
+    );
+  } catch (error) {
+    console.log(error);
+    return res.status(404).json(new ApiError(404, "Error Occured at payment"));
+  }
+});
+
+const getUserAllOrder = asyncHandler(async (req, res) => {
+  const allOrder = await Order.find({ user: req.user?._id });
+  console.log(allOrder);
+  return res
+    .status(200)
+    .json(new ApiRespose(200, allOrder, "order sent successfully"));
+});
+
+const getAllOrder = asyncHandler(async (req, res) => {
+  const allOrder = await Order.find({}).populate("items.products");
+  console.log(allOrder);
+  return res
+    .status(200)
+    .json(new ApiRespose(200, allOrder, "order sent successfully"));
+});
+
+const updateStatus = asyncHandler(async (req, res) => {
+  const { status } = req.body;
+  const { orderId } = req.params;
+  const order = await Order.findByIdAndUpdate(
+    orderId,
+    {
+      status,
+    },
+    { new: true }
+  );
+
+  return res
+    .status(200)
+    .json(new ApiRespose(200, order, "order sent successfully"));
+});
+
 export {
   createProduct,
   updateProduct,
@@ -251,4 +356,9 @@ export {
   getSingleProduct,
   getSimilarProduct,
   getProductByCategory,
+  getToken,
+  makePayment,
+  getUserAllOrder,
+  getAllOrder,
+  updateStatus
 };

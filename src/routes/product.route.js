@@ -6,13 +6,18 @@ import {
   createProduct,
   deleteProduct,
   filterProduct,
+  getAllOrder,
   getAllProduct,
   getProductByCategory,
   getSimilarProduct,
   getSingleProduct,
+  getToken,
+  getUserAllOrder,
   listProduct,
+  makePayment,
   searchProduct,
   updateProduct,
+  updateStatus,
 } from "../controllers/product.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
 
@@ -40,4 +45,12 @@ productRoute
 productRoute
   .route("/get-product-by-category/:slug")
   .get(verifyJWT, getProductByCategory);
+productRoute.route("/get-token").get(verifyJWT, getToken);
+productRoute.route("/make-payment").post(verifyJWT, makePayment);
+productRoute.route("/get-user-order").get(verifyJWT, getUserAllOrder);
+productRoute.route("/get-all-order").get(verifyJWT, isAdmin, getAllOrder);
+productRoute
+  .route("/update-order/:orderId")
+  .patch(verifyJWT, isAdmin, updateStatus);
+
 export default productRoute;
